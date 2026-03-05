@@ -1,18 +1,23 @@
 #ifndef WIFI_HPP
 #define WIFI_HPP
 
+#include "esp_http_client.h"
+#include "esp_http_server.h"
 #include <cstdint>
+
+
 namespace vfarm {
 
 class WifiCust {
-public:
+
+    public:
+
     const char* tag = "wifi_c";
-    int64_t timeout = 30000;
-    int64_t start_wait;
-    
-    int64_t pulse_start;
-    int64_t pulse_end;
-    float distance_cm;
+    // int64_t timeout = 30000;
+    // int64_t start_wait;
+    // int64_t pulse_start;
+    // int64_t pulse_end;
+    // float distance_cm;
 
     WifiCust();
     WifiCust(const char *wifi_ssid, const char *wifi_pass);
@@ -26,6 +31,7 @@ public:
     void wifi_init_sta();
     bool server_is_up();
     bool check_status();
+    void start_server(int64_t timeout = 300000);
 
 
  private:
@@ -35,6 +41,8 @@ public:
     const char *server_url_;
 
 };
+
+
 }
 
 #endif

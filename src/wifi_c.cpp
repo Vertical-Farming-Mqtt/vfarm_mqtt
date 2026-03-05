@@ -9,6 +9,9 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "wifi_c.hpp"
+#include "wifi_stat.hpp"
+#include <cstdint>
+
 
 
 namespace vfarm {
@@ -56,6 +59,7 @@ void WifiCust::wifi_init_sta(){
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));  // keeps STA (for MQTT) + adds AP (for config)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
@@ -91,5 +95,20 @@ bool WifiCust::check_status(){
     return 0 ;
 }
 
+void WifiCust::start_server(int64_t timeout) {
+    xTaskCreate([](void* arg) {
+        {
+            int64_t t = *static_cast<int64_t*>(arg);
+            vfarm::WifiStatCheck server("ESP32_Config", nullptr); // starts AP + HTTP
+            vTaskDelay(pdMS_TO_TICKS(t));                           // wait 5 min == 300000
+            server.stop();
+            ESP_LOGI("wifi_stat_server", "Destroying server task.");
+            
+        }
+        vTaskDelete(NULL);
+
+        // return; // task ends → FreeRTOS cleans up
+    }, "ap_setup", 4096, &timeout, 5, NULL);
+}
 
 }
