@@ -67,22 +67,56 @@ void WifiStatCheck::start(const char* ap_ssid, const char* ap_pass){
 }
 
 
+// esp_err_t WifiStatCheck::config_handler(httpd_req_t *req) {
+//     const char* status = vfarm::MqttBase::mqtt_connected ? "Connected" : "Disconnected";
+//     char resp[512];
+//     snprintf(resp, sizeof(resp),
+//         // "<html><head><meta http-equiv='refresh' content='5'></head>"
+//         "<html><body><h2>Setup</h2>"
+//         "<p>MQTT Status: %s</p>"
+//         "<form method='post' action='/save'>"
+//         "SSID: <input name='ssid'><br>"
+//         "Pass: <input name='pass'><br>"
+//         "MQTT: <input name='mqtt'><br>"
+//         "<input type='submit'></form></body></html>",
+//         status);
+//     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+//     return ESP_OK;
+// }
+
+
 esp_err_t WifiStatCheck::config_handler(httpd_req_t *req) {
-    const char* status = vfarm::MqttBase::mqtt_connected ? "Connected" : "Disconnected";
+
+    bool wifi_connected = false;
+    wifi_ap_record_t ap_info;
+
+    if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
+        wifi_connected = true;
+    }
+
+    const char* wifi_status = wifi_connected ? "Connected" : "Disconnected";
+    const char* mqtt_status = vfarm::MqttBase::mqtt_connected ? "Connected" : "Disconnected";
+
     char resp[512];
+
     snprintf(resp, sizeof(resp),
-        // "<html><head><meta http-equiv='refresh' content='5'></head>"
         "<html><body><h2>Setup</h2>"
+        "<p>WiFi Status: %s</p>"
         "<p>MQTT Status: %s</p>"
         "<form method='post' action='/save'>"
         "SSID: <input name='ssid'><br>"
         "Pass: <input name='pass'><br>"
         "MQTT: <input name='mqtt'><br>"
         "<input type='submit'></form></body></html>",
-        status);
+        wifi_status, mqtt_status);
+
+
+
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
     return ESP_OK;
 }
+
 
 esp_err_t WifiStatCheck::save_handler(httpd_req_t *req) {
     httpd_resp_send(req, "Saved!", HTTPD_RESP_USE_STRLEN);

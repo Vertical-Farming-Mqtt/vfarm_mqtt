@@ -25,6 +25,7 @@ Designed for **IoT devices, sensors, actuators, and edge nodes** that need clean
 * Credential configuration helpers
 * Connection status checks
 * Optional HTTP server availability check
+* ATP Sever for status checking
 
 ---
 
